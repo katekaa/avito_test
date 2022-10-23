@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Weather</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="forecast_feelslike">Ощущается как %1$s°C</string>
+    <string name="forecast_temp">%1$s°С</string>
+    <string name="Week">Неделя</string>
+    <string name="forecast_tempRange">%1$s/%2$s°C</string>
+    <string name="forecast_wind">Ветер %1$s м/с</string>
+</resources>
