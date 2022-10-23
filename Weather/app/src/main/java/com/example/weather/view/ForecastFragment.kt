@@ -13,6 +13,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.TextView.OnEditorActionListener
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.constraintlayout.motion.widget.Debug.getLocation
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -25,6 +26,7 @@ import com.example.weather.viewmodel.ForecastViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import java.security.Permissions
 
 
 class ForecastFragment : Fragment() {
@@ -69,7 +71,7 @@ class ForecastFragment : Fragment() {
             if (it != null) {
                 binding.forecast = it
                 val identifier = resources.getIdentifier(
-                    it?.icon ?: "mock",
+                    it.icon ?: "mock",
                     "drawable",
                     requireActivity().packageName
                 )
@@ -81,23 +83,35 @@ class ForecastFragment : Fragment() {
         viewModel.weekStatus.observe(viewLifecycleOwner) { adapter.setSt(it.loader) }
 
         binding.root.setOnClickListener {
+            closeKeyboard()
             binding.city.clearFocus()
             binding.city.setSelection(0)
+
         }
 
         binding.city.setOnEditorActionListener(OnEditorActionListener { v, actionId, _ ->
+            var text = v.text.toString()
+
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 closeKeyboard()
                 binding.city.clearFocus()
-                val text = v.text.toString().substring(0,1).uppercase() + v.text.toString().substring(1)
-                viewModel.getForecastByCity(text)
-                viewModel.getWeekForecastByCity(text)
-                return@OnEditorActionListener true
+                if (text != "") {
+                    text = text.substring(0, 1).uppercase() + text
+                        .substring(1)
+                    viewModel.getForecastByCity(text)
+                    viewModel.getWeekForecastByCity(text)
+                    return@OnEditorActionListener true
+                } else {
+                    viewModel.city.value?.let { viewModel.getForecastByCity(it) }
+                    viewModel.city.value?.let { viewModel.getWeekForecastByCity(it) }
+                    return@OnEditorActionListener true
+                }
             }
             false
         })
 
         binding.location.setOnClickListener {
+            closeKeyboard()
             getLocation()
         }
 
@@ -166,7 +180,7 @@ class ForecastFragment : Fragment() {
                 null
             )
                 .addOnSuccessListener { location: Location? ->
-                    if (location == null)   getDefaultWeather()
+                    if (location == null) getDefaultWeather()
                     else {
                         viewModel.getForecast(location.latitude, location.longitude)
                         viewModel.getWeekForecast(location.latitude, location.longitude)
